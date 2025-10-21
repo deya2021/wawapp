@@ -1,0 +1,8 @@
+{
+  "title": "WawApp",
+  "pickup": "Lieu de ramassage",
+  "dropoff": "Lieu de dépôt",
+  "get_quote": "Calculer le prix",
+  "request_now": "Commander maintenant",
+  "track": "Suivre"
+}
