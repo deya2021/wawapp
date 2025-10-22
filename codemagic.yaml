@@ -20,6 +20,8 @@ workflows:
     scripts:
       - name: Get dependencies
         script: flutter pub get
+      - name: Generate l10n
+        script: flutter gen-l10n
       - name: Build debug APK
         script: flutter build apk --debug --no-shrink
     artifacts:
