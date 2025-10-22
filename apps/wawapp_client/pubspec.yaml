@@ -25,10 +25,28 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  change_app_package_name: ^1.5.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icons/wawapp_client_1024.png
+  adaptive_icon_background: assets/icons/wawapp_client_adaptive_bg.png
+  adaptive_icon_foreground: assets/icons/wawapp_client_1024.png
+
+flutter_native_splash:
+  color: "#0B1220"
+  image: assets/icons/splash_client_logo.png
+  android: true
+  ios: true
 
 flutter_intl:
   enabled: true

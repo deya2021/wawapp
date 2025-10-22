@@ -1,4 +1,4 @@
-package com.example.wawapp_client
+package com.wawapp.client
 
 import io.flutter.embedding.android.FlutterActivity
 
