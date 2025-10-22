@@ -133,6 +133,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تتبع'**
   String get track;
+
+  /// No description provided for @currency.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقية'**
+  String get currency;
+
+  /// No description provided for @estimated_price.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر المقدر'**
+  String get estimated_price;
 }
 
 class _AppLocalizationsDelegate

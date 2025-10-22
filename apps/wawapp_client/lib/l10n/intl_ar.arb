@@ -5,5 +5,7 @@
   "dropoff": "موقع التسليم",
   "get_quote": "احسب السعر",
   "request_now": "اطلب الآن",
-  "track": "تتبع"
+  "track": "تتبع",
+  "currency": "أوقية",
+  "estimated_price": "السعر المقدر"
 }

@@ -6,14 +6,17 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   final fcmToken = await FirebaseMessaging.instance.getToken();
   print('🔑 FCM Token: $fcmToken');
-  
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

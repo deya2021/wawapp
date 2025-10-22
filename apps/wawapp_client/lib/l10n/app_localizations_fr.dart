@@ -25,4 +25,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get track => 'Suivre';
+
+  @override
+  String get currency => 'MRU';
+
+  @override
+  String get estimated_price => 'Prix estimé';
 }

@@ -4,5 +4,7 @@
   "dropoff": "Lieu de dépôt",
   "get_quote": "Calculer le prix",
   "request_now": "Commander maintenant",
-  "track": "Suivre"
+  "track": "Suivre",
+  "currency": "MRU",
+  "estimated_price": "Prix estimé"
 }

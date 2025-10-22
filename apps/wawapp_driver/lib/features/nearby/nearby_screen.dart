@@ -24,7 +24,7 @@ class NearbyScreen extends StatelessWidget {
                 leading: const Icon(Icons.local_shipping),
                 title: Text('طلب #${index + 1}'),
                 subtitle: const Text('المسافة: --- كم'),
-                trailing: const Text('--- DA'),
+                trailing: const Text('--- MRU'),
               ),
             );
           },

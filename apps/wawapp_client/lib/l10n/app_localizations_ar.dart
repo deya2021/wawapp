@@ -25,4 +25,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get track => 'تتبع';
+
+  @override
+  String get currency => 'أوقية';
+
+  @override
+  String get estimated_price => 'السعر المقدر';
 }

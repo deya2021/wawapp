@@ -41,6 +41,7 @@ class TrackScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     const Text('السائق: ---'),
                     const Text('المركبة: ---'),
+                    Text('السعر: --- ${l10n.currency}'),
                   ],
                 ),
               ),

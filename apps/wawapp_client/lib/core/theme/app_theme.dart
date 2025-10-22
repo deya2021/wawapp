@@ -39,7 +39,6 @@ class AppTheme {
         secondary: secondaryColor,
         error: errorColor,
         surface: darkSurface,
-        background: darkSurface,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
