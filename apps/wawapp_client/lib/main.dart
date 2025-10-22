@@ -29,12 +29,9 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       locale: const Locale('ar'),
-      supportedLocales: const [
-        Locale('ar'),
-        Locale('fr'),
-      ],
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.title,
       routerConfig: router,
     );
   }
