@@ -1,6 +1,6 @@
 {
   "@@locale": "ar",
-  "title": "واو أب",
+  "appTitle": "واو أب",
   "pickup": "موقع الاستلام",
   "dropoff": "موقع التسليم",
   "get_quote": "احسب السعر",

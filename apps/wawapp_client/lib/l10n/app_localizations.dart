@@ -98,11 +98,11 @@ abstract class AppLocalizations {
     Locale('fr')
   ];
 
-  /// No description provided for @title.
+  /// No description provided for @appTitle.
   ///
   /// In ar, this message translates to:
   /// **'واو أب'**
-  String get title;
+  String get appTitle;
 
   /// No description provided for @pickup.
   ///
