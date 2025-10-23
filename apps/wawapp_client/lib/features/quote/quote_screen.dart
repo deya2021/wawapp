@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'providers/quote_provider.dart';
-import 'models/latlng.dart';
+import '../map/pick_route_controller.dart';
+import '../track/models/order.dart';
 
 class QuoteScreen extends ConsumerStatefulWidget {
   const QuoteScreen({super.key});
@@ -13,16 +14,6 @@ class QuoteScreen extends ConsumerStatefulWidget {
 }
 
 class _QuoteScreenState extends ConsumerState<QuoteScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Demo locations for testing
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(quoteProvider.notifier).setPickup(const LatLng(18.0735, -15.9582));
-      ref.read(quoteProvider.notifier).setDropoff(const LatLng(18.0835, -15.9682));
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -53,7 +44,8 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                 quoteState.priceInMRU != null
                     ? '${l10n.currency} ${quoteState.priceInMRU!.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'
                     : '--- ${l10n.currency}',
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               if (quoteState.distanceKm != null) ...[
@@ -66,7 +58,20 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
               ],
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: quoteState.isReady ? () => context.push('/track') : null,
+                onPressed: quoteState.isReady
+                    ? () {
+                        final routeState = ref.read(routePickerProvider);
+                        final order = Order(
+                          distanceKm: quoteState.distanceKm!,
+                          price: quoteState.priceInMRU!.toDouble(),
+                          pickupAddress: routeState.pickupAddress,
+                          dropoffAddress: routeState.dropoffAddress,
+                          pickup: routeState.pickup!,
+                          dropoff: routeState.dropoff!,
+                        );
+                        context.push('/track', extra: order);
+                      }
+                    : null,
                 child: Text(l10n.request_now),
               ),
             ],

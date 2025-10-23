@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/quote/quote_screen.dart';
 import '../../features/track/track_screen.dart';
+import '../../features/track/models/order.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -22,7 +23,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/track',
         name: 'track',
-        builder: (context, state) => const TrackScreen(),
+        builder: (context, state) => TrackScreen(order: state.extra as Order?),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -16,6 +16,9 @@ dependencies:
   intl: ^0.20.2
   geolocator: ^10.1.0
   google_maps_flutter: ^2.5.0
+  google_place: ^0.4.7
+  uuid: ^4.4.0
+  http: ^0.13.6
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.3
   cloud_firestore: ^4.13.6

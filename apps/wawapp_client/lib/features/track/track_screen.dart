@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
+import 'models/order.dart';
 
 class TrackScreen extends StatelessWidget {
-  const TrackScreen({super.key});
+  final Order? order;
+  const TrackScreen({super.key, this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +39,18 @@ class TrackScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('الحالة: في الطريق', style: Theme.of(context).textTheme.headlineMedium),
+                    Text('الحالة: في الطريق',
+                        style: Theme.of(context).textTheme.headlineMedium),
                     const SizedBox(height: 8),
                     const Text('السائق: ---'),
                     const Text('المركبة: ---'),
-                    Text('السعر: --- ${l10n.currency}'),
+                    Text(
+                        'السعر: ${order?.price.round() ?? '---'} ${l10n.currency}'),
+                    if (order != null) ...[
+                      Text('المسافة: ${order!.distanceKm} كم'),
+                      Text('من: ${order!.pickupAddress}'),
+                      Text('إلى: ${order!.dropoffAddress}'),
+                    ],
                   ],
                 ),
               ),

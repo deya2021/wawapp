@@ -49,11 +49,19 @@ class QuoteNotifier extends StateNotifier<QuoteState> {
     _calculatePrice();
   }
 
+  void setDistance(double distance) {
+    state = state.copyWith(distanceKm: distance);
+  }
+
+  void setPrice(int price) {
+    state = state.copyWith(priceInMRU: price);
+  }
+
   void _calculatePrice() {
     if (state.pickup != null && state.dropoff != null) {
       final distance = distanceKm(state.pickup!, state.dropoff!);
       final price = baseFare + (distance * perKmRate).round() + serviceFee;
-      
+
       state = state.copyWith(
         distanceKm: distance,
         priceInMRU: price,

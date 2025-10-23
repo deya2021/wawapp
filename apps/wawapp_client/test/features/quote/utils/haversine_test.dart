@@ -8,18 +8,18 @@ void main() {
       // Nouakchott to nearby location (approximately 1.5 km)
       const point1 = LatLng(18.0735, -15.9582);
       const point2 = LatLng(18.0835, -15.9682);
-      
+
       final distance = distanceKm(point1, point2);
-      
+
       expect(distance, greaterThan(1.0));
       expect(distance, lessThan(2.0));
     });
 
     test('should return 0 for same points', () {
       const point = LatLng(18.0735, -15.9582);
-      
+
       final distance = distanceKm(point, point);
-      
+
       expect(distance, equals(0.0));
     });
   });
