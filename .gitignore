@@ -2,6 +2,9 @@ build/
 .dart_tool/
 .idea/
 .vscode/
+apps/**/google-services.json
+apps/**/lib/firebase_options.dart
+apps/**/android/.kotlin/
 **/google-services.json
 **/GoogleService-Info.plist
 .firebase/
