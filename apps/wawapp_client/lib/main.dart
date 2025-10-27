@@ -10,12 +10,22 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-  print('🔑 FCM Token: $fcmToken');
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      print('🔑 FCM Token: $fcmToken');
+    } catch (e) {
+      print('⚠️ FCM Token error: $e');
+    }
+  } catch (e) {
+    print('❌ Firebase initialization error: $e');
+  }
 
   runApp(const ProviderScope(child: MyApp()));
 }

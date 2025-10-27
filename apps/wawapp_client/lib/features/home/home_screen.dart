@@ -32,7 +32,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLocationPermission();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLocationPermission();
+    });
   }
 
   @override
@@ -43,8 +45,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _checkLocationPermission() async {
+    setState(() {
+      _errorMessage = 'جاري تحديد موقعك...';
+    });
+
     try {
       LocationPermission permission = await Geolocator.checkPermission();
+
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
@@ -53,35 +60,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           permission == LocationPermission.always) {
         setState(() {
           _hasLocationPermission = true;
+          _errorMessage = null;
         });
-        _getCurrentLocation();
-      } else {
+        await _getCurrentLocation();
+      } else if (permission == LocationPermission.deniedForever) {
         setState(() {
-          _errorMessage = 'الرجاء تفعيل إذن الموقع لمتابعة التحديد';
+          _errorMessage = null;
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_errorMessage!)),
+            SnackBar(
+              content: const Text(
+                  'يرجى تفعيل إذن الموقع من الإعدادات لتحديد موقعك الحالي'),
+              action: SnackBarAction(
+                label: 'الإعدادات',
+                onPressed: () => Geolocator.openAppSettings(),
+              ),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = null;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('يمكنك استخدام الخريطة يدوياً لتحديد المواقع'),
+            ),
           );
         }
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'خطأ في الوصول للموقع';
+        _errorMessage = null;
       });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تعذر الوصول للموقع. يمكنك استخدام الخريطة يدوياً'),
+          ),
+        );
+      }
     }
   }
 
   Future<void> _getCurrentLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition();
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
       _mapController?.animateCamera(
         CameraUpdate.newLatLng(
           LatLng(position.latitude, position.longitude),
         ),
       );
     } catch (e) {
-      // Fallback to Nouakchott if current location fails
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'لم يتمكن من تحديد موقعك الحالي. يرجى التأكد من تفعيل GPS'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -171,16 +215,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         height: 300,
                         child: _errorMessage != null
                             ? Container(
-                                color: Colors.grey[300],
+                                color: Colors.grey[100],
                                 child: Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.map,
-                                          size: 64, color: Colors.grey),
-                                      const SizedBox(height: 8),
-                                      Text(_errorMessage!,
-                                          textAlign: TextAlign.center),
+                                      if (_errorMessage ==
+                                          'جاري تحديد موقعك...')
+                                        const CircularProgressIndicator()
+                                      else
+                                        const Icon(Icons.location_off,
+                                            size: 64, color: Colors.grey),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        _errorMessage!,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -194,6 +245,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 myLocationButtonEnabled: _hasLocationPermission,
                                 onTap: _onMapTap,
                                 markers: _buildMarkers(routeState),
+                                compassEnabled: true,
+                                mapToolbarEnabled: false,
                               ),
                       ),
                       if (_errorMessage == null)
