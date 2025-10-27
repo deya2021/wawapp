@@ -1,27 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'generated/l10n.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('🔑 FCM Token: $fcmToken');
-  } catch (e) {
-    print('Firebase already initialized: $e');
-  }
-
   runApp(const ProviderScope(child: MyApp()));
 }
 

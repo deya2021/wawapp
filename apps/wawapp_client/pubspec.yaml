@@ -1,4 +1,4 @@
-name: wawapp_client
+﻿name: wawapp_client
 description: WawApp Client Application
 publish_to: 'none'
 version: 1.0.0+1
@@ -25,6 +25,7 @@ dependencies:
   firebase_messaging: ^14.7.10
 
 dev_dependencies:
+  intl_utils: ^2.8.6
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0

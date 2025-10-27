@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/latlng.dart';
-import '../utils/haversine.dart';
 
 class QuoteState {
   final LatLng? pickup;
@@ -57,9 +57,17 @@ class QuoteNotifier extends StateNotifier<QuoteState> {
     state = state.copyWith(priceInMRU: price);
   }
 
-  void _calculatePrice() {
-    if (state.pickup != null && state.dropoff != null) {
-      final distance = distanceKm(state.pickup!, state.dropoff!);
+  Future<void> calculateDistance() async {
+    final p = state.pickup;
+    final d = state.dropoff;
+    if (p != null && d != null) {
+      final distanceInMeters = Geolocator.distanceBetween(
+        p.latitude,
+        p.longitude,
+        d.latitude,
+        d.longitude,
+      );
+      final distance = distanceInMeters / 1000.0;
       final price = baseFare + (distance * perKmRate).round() + serviceFee;
 
       state = state.copyWith(
@@ -67,6 +75,10 @@ class QuoteNotifier extends StateNotifier<QuoteState> {
         priceInMRU: price,
       );
     }
+  }
+
+  void _calculatePrice() {
+    calculateDistance();
   }
 
   void reset() {

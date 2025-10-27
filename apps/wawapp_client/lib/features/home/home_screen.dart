@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import '../../l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../map/pick_route_controller.dart';
 import '../map/places_autocomplete_sheet.dart';
 import '../quote/providers/quote_provider.dart';
@@ -109,19 +109,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Set<Marker> _buildMarkers(RoutePickerState state) {
     final markers = <Marker>{};
 
-    if (state.pickup != null) {
+    final pickup = state.pickup;
+    final dropoff = state.dropoff;
+
+    if (pickup != null) {
       markers.add(Marker(
         markerId: const MarkerId('pickup'),
-        position: state.pickup!,
+        position: pickup,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         infoWindow: InfoWindow(title: 'الاستلام', snippet: state.pickupAddress),
       ));
     }
 
-    if (state.dropoff != null) {
+    if (dropoff != null) {
       markers.add(Marker(
         markerId: const MarkerId('dropoff'),
-        position: state.dropoff!,
+        position: dropoff,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow: InfoWindow(title: 'التسليم', snippet: state.dropoffAddress),
       ));
@@ -132,7 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = S.of(context);
     final isRTL = Directionality.of(context) == TextDirection.rtl;
     final routeState = ref.watch(routePickerProvider);
 
@@ -267,8 +270,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: (routeState.pickup != null &&
                               routeState.dropoff != null)
                           ? () {
-                              final pickup = routeState.pickup!;
-                              final dropoff = routeState.dropoff!;
+                              final pickup = routeState.pickup;
+                              final dropoff = routeState.dropoff;
+
+                              if (pickup == null || dropoff == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('اختر موقعي الاستلام والتسليم')),
+                                );
+                                return;
+                              }
 
                               final km = computeDistanceKm(
                                 lat1: pickup.latitude,
@@ -277,8 +289,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 lng2: dropoff.longitude,
                               );
                               final price = computePrice(km);
-
-                              print('Distance: ${km}km, Price: ${price}MRU');
 
                               ref.read(quoteProvider.notifier).setPickup(
                                   QuoteLatLng.LatLng(

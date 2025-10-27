@@ -6,21 +6,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'generated/l10n.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
-import 'firebase_options.dart';
+import 'firebase_options_safe.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('🔑 FCM Token: $fcmToken');
-  } catch (e) {
-    print('Firebase already initialized: $e');
-  }
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  print('🔑 FCM Token: $fcmToken');
 
   runApp(const ProviderScope(child: MyApp()));
 }

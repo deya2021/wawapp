@@ -91,6 +91,18 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 
+# API Keys & Sensitive Files
+**/*api_key*
+**/*API_KEY*
+**/secrets/
+**/config/secrets.dart
+**/lib/config/api_keys.dart
+**/android/app/src/main/res/values/api_keys.xml
+**/android/app/src/main/res/values/secrets.xml
+**/ios/Runner/Config.plist
+.env*
+!.env.example
+
 # macOS
 .AppleDouble
 .LSOverride

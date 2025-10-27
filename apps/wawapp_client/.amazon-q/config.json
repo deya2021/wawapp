@@ -1,0 +1,13 @@
+{
+  "post_modification_tasks": [
+    "dart format .",
+    "flutter analyze",
+    "flutter doctor -v",
+    "grep -R 'Firebase.initializeApp' lib/ || echo '✅ no duplicate Firebase init'",
+    "grep -R 'WidgetsFlutterBinding.ensureInitialized' lib/ || echo '✅ binding ensured'",
+    "flutter build apk --debug --no-pub",
+    "dart run tool/verify_screens.dart",
+    "dart run tool/verify_integrations.dart",
+    "flutter test integration_test/screen_integrity_test.dart"
+  ]
+}

@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_place/google_place.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:uuid/uuid.dart';
-import '../../utils/geocoding_helper.dart';
+import '../../utils/geocoding_helper_safe.dart';
 
 // Use Google Maps LatLng directly to avoid conflicts
 typedef MapLatLng = LatLng;
