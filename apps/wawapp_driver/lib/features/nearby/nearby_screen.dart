@@ -12,9 +12,7 @@ class NearbyScreen extends StatelessWidget {
     return Directionality(
       textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.nearby_requests),
-        ),
+        appBar: AppBar(title: Text(l10n.nearby_requests)),
         body: ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: 5,
