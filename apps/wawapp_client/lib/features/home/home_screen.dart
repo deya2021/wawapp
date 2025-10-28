@@ -7,7 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../map/pick_route_controller.dart';
 import '../map/places_autocomplete_sheet.dart';
 import '../quote/providers/quote_provider.dart';
-import '../quote/models/latlng.dart' as QuoteLatLng;
+import '../quote/models/latlng.dart' as quote_latlng;
 import '../../core/geo/distance.dart';
 import '../../core/pricing/pricing.dart';
 
@@ -197,6 +197,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         appBar: AppBar(
           title: Text(l10n.appTitle),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () => context.push('/about'),
+            ),
+          ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -211,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Stack(
                     children: [
-                      Container(
+                      SizedBox(
                         height: 300,
                         child: _errorMessage != null
                             ? Container(
@@ -257,7 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(color: Colors.black26, blurRadius: 4)
                               ],
                             ),
@@ -334,10 +340,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               print('Distance: ${km}km, Price: ${price}MRU');
 
                               ref.read(quoteProvider.notifier).setPickup(
-                                  QuoteLatLng.LatLng(
+                                  quote_latlng.LatLng(
                                       pickup.latitude, pickup.longitude));
                               ref.read(quoteProvider.notifier).setDropoff(
-                                  QuoteLatLng.LatLng(
+                                  quote_latlng.LatLng(
                                       dropoff.latitude, dropoff.longitude));
                               ref.read(quoteProvider.notifier).setDistance(km);
                               ref

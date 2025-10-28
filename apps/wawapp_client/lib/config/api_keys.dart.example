@@ -1,0 +1,10 @@
+// نسخة مثال لملف مفاتيح API
+// انسخ هذا الملف إلى api_keys.dart وأضف مفاتيحك الحقيقية
+
+class ApiKeys {
+  static const String googleMapsApiKey = 'YOUR_GOOGLE_MAPS_API_KEY_HERE';
+  static const String firebaseApiKey = 'YOUR_FIREBASE_API_KEY_HERE';
+  
+  // أضف مفاتيح أخرى حسب الحاجة
+  static const String stripePublishableKey = 'YOUR_STRIPE_KEY_HERE';
+}
