@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Doctor report (auto-generated diagnostic file)
+apps/wawapp_client/doctor_report.txt
+doctor_report.txt

@@ -33,6 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    dev.log('HomeScreen initializing...', name: 'WAWAPP_HOME');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkLocationPermission();
     });
@@ -46,11 +47,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _checkLocationPermission() async {
+    dev.log('Checking location permission...', name: 'WAWAPP_HOME');
     setState(() {
       _errorMessage = 'جاري تحديد موقعك...';
     });
 
     final hasPermission = await LocationService.checkPermissions();
+    dev.log('Location permission result: $hasPermission', name: 'WAWAPP_HOME');
 
     if (hasPermission) {
       setState(() {
@@ -62,6 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       setState(() {
         _errorMessage = null;
       });
+      dev.log('Location permission denied, showing manual mode', name: 'WAWAPP_HOME');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -206,6 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               )
                             : GoogleMap(
                                 onMapCreated: (GoogleMapController controller) {
+                                  dev.log('GoogleMap created successfully', name: 'WAWAPP_HOME');
                                   _mapController = controller;
                                 },
                                 initialCameraPosition: _nouakchott,
@@ -215,6 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 markers: _buildMarkers(routeState),
                                 compassEnabled: true,
                                 mapToolbarEnabled: false,
+                                zoomControlsEnabled: true,
                               ),
                       ),
                       if (_errorMessage == null)

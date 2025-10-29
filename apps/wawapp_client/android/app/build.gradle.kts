@@ -11,7 +11,7 @@ plugins {
 android {
     namespace = "com.wawapp.client"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "25.1.8937393"  // mirrors android.ndkVersion from gradle.properties
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

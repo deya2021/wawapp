@@ -8,18 +8,25 @@ class LocationService {
   static const String _tag = 'WAWAPP_LOC';
 
   static Future<bool> checkPermissions() async {
+    dev.log('Checking location permissions...', name: _tag);
     LocationPermission permission = await Geolocator.checkPermission();
+    dev.log('Current permission: $permission', name: _tag);
 
     if (permission == LocationPermission.denied) {
+      dev.log('Requesting location permission...', name: _tag);
       permission = await Geolocator.requestPermission();
+      dev.log('Permission after request: $permission', name: _tag);
     }
 
-    return permission == LocationPermission.whileInUse ||
+    final hasPermission = permission == LocationPermission.whileInUse ||
         permission == LocationPermission.always;
+    dev.log('Has location permission: $hasPermission', name: _tag);
+    return hasPermission;
   }
 
   static Future<Position?> getCurrentPosition() async {
     try {
+      dev.log('Getting current position...', name: _tag);
       final hasPermission = await checkPermissions();
       if (!hasPermission) {
         dev.log('Location permission denied', name: _tag);
@@ -27,15 +34,19 @@ class LocationService {
       }
 
       final isEnabled = await Geolocator.isLocationServiceEnabled();
+      dev.log('Location services enabled: $isEnabled', name: _tag);
       if (!isEnabled) {
         dev.log('Location services disabled', name: _tag);
         return null;
       }
 
-      return await Geolocator.getCurrentPosition(
+      dev.log('Requesting GPS position...', name: _tag);
+      final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
+      dev.log('Got position: ${position.latitude}, ${position.longitude}', name: _tag);
+      return position;
     } catch (e) {
       dev.log('Error getting current position: $e', name: _tag);
       return null;
