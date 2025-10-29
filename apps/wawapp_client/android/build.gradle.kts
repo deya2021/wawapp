@@ -32,3 +32,31 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+tasks.register<Exec>("preflightCheck") {
+    description = "Run environment preflight checks"
+    group = "verification"
+    workingDir = file("..")
+    
+    val localProps = file("local.properties")
+    val flutterSdk = if (localProps.exists()) {
+        localProps.readLines().find { it.startsWith("flutter.sdk=") }
+            ?.substringAfter("=")?.replace("\\\\", "\\") ?: "flutter"
+    } else "flutter"
+    
+    val dartCmd = if (System.getProperty("os.name").lowercase().contains("windows")) {
+        if (flutterSdk != "flutter") "$flutterSdk\\bin\\dart.bat" else "dart"
+    } else {
+        if (flutterSdk != "flutter") "$flutterSdk/bin/dart" else "dart"
+    }
+    
+    commandLine = listOf(dartCmd, "run", "tool/preflight_check.dart")
+}
+
+gradle.taskGraph.whenReady {
+    allTasks.forEach { task ->
+        if (task.name.contains("assemble") || task.name.contains("bundle")) {
+            task.dependsOn("preflightCheck")
+        }
+    }
+}

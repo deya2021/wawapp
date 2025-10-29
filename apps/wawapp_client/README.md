@@ -1,16 +1,60 @@
-# wawapp_client
+# WawApp Client
 
-A new Flutter project.
+Flutter client application for the WawApp ride-hailing platform.
 
-## Getting Started
+## Prerequisites
 
-This project is a starting point for a Flutter application.
+- Flutter 3.22.0+
+- Dart SDK (bundled with Flutter)
+- Java JDK 17+
+- Android SDK with API level 34+
+- Firebase project configuration
 
-A few resources to get you started if this is your first Flutter project:
+## Environment Verification
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Before building, run the preflight check to verify all dependencies:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+dart run tool/preflight_check.dart
+```
+
+This validates:
+- ✅ Flutter/Dart SDK versions
+- ✅ Java JDK 17+ installation
+- ✅ Android SDK configuration
+- ✅ Gradle compatibility
+- ✅ Firebase setup (google-services.json, firebase_options.dart)
+- ✅ Required permissions in AndroidManifest.xml
+- ✅ Firebase dependencies in pubspec.yaml
+- ✅ Network connectivity to Firebase
+
+## Development
+
+```bash
+# Install dependencies
+flutter pub get
+
+# Run preflight check
+dart run tool/preflight_check.dart
+
+# Run in debug mode
+flutter run
+
+# Build APK
+flutter build apk --debug
+```
+
+## CI/CD
+
+The preflight check runs automatically:
+- Before Gradle assembly tasks
+- In GitHub Actions workflow
+- Blocks build if critical issues found
+
+## Troubleshooting
+
+If preflight check fails:
+1. Check Flutter/Java versions
+2. Verify Android SDK path in `android/local.properties`
+3. Ensure `google-services.json` matches package name
+4. Run `flutter doctor` for additional diagnostics
