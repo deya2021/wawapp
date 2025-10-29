@@ -125,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         markerId: const MarkerId('pickup'),
         position: state.pickup!,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: InfoWindow(title: 'الاستلام', snippet: state.pickupAddress),
+        infoWindow: InfoWindow(title: 'استلام', snippet: state.pickupAddress),
       ));
     }
 
@@ -134,11 +134,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         markerId: const MarkerId('dropoff'),
         position: state.dropoff!,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(title: 'التسليم', snippet: state.dropoffAddress),
+        infoWindow: InfoWindow(title: 'تسليم', snippet: state.dropoffAddress),
       ));
     }
 
     return markers;
+  }
+
+  void _fitBounds(RoutePickerState state) {
+    if (_mapController == null) return;
+
+    final pickup = state.pickup;
+    final dropoff = state.dropoff;
+
+    if (pickup != null && dropoff != null) {
+      final bounds = LatLngBounds(
+        southwest: LatLng(
+          pickup.latitude < dropoff.latitude
+              ? pickup.latitude
+              : dropoff.latitude,
+          pickup.longitude < dropoff.longitude
+              ? pickup.longitude
+              : dropoff.longitude,
+        ),
+        northeast: LatLng(
+          pickup.latitude > dropoff.latitude
+              ? pickup.latitude
+              : dropoff.latitude,
+          pickup.longitude > dropoff.longitude
+              ? pickup.longitude
+              : dropoff.longitude,
+        ),
+      );
+      _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 48.0));
+    } else if (pickup != null) {
+      _mapController!.animateCamera(CameraUpdate.newLatLngZoom(pickup, 15.0));
+    }
   }
 
   @override
@@ -154,6 +185,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
       if (_dropoffController.text != routeState.dropoffAddress) {
         _dropoffController.text = routeState.dropoffAddress;
+      }
+      // Fit bounds when both locations are set
+      if (routeState.pickup != null && routeState.dropoff != null) {
+        _fitBounds(routeState);
       }
     });
 
@@ -214,6 +249,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   dev.log('GoogleMap created successfully',
                                       name: 'WAWAPP_HOME');
                                   _mapController = controller;
+                                  WidgetsBinding.instance.addPostFrameCallback(
+                                      (_) => _fitBounds(routeState));
                                 },
                                 initialCameraPosition: _nouakchott,
                                 myLocationEnabled: _hasLocationPermission,

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'build_info.dart';
 
+const bool kShowDevPill = false;
+
 class BuildInfoBanner extends StatelessWidget {
   final Widget child;
 
@@ -9,7 +11,7 @@ class BuildInfoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!kDebugMode) return child;
+    if (!kDebugMode || kReleaseMode || !kShowDevPill) return child;
 
     return Stack(
       children: [

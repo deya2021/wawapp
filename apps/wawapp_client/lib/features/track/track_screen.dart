@@ -70,7 +70,7 @@ class _TrackScreenState extends State<TrackScreen> {
             widget.order!.pickup.latitude, widget.order!.pickup.longitude),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         infoWindow:
-            InfoWindow(title: 'الاستلام', snippet: widget.order!.pickupAddress),
+            InfoWindow(title: 'استلام', snippet: widget.order!.pickupAddress),
       ));
     }
 
@@ -81,11 +81,63 @@ class _TrackScreenState extends State<TrackScreen> {
             widget.order!.dropoff.latitude, widget.order!.dropoff.longitude),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow:
-            InfoWindow(title: 'التسليم', snippet: widget.order!.dropoffAddress),
+            InfoWindow(title: 'تسليم', snippet: widget.order!.dropoffAddress),
       ));
     }
 
     return markers;
+  }
+
+  void _fitBounds() {
+    if (_mapController == null) return;
+
+    final pickup = widget.order?.pickup;
+    final dropoff = widget.order?.dropoff;
+
+    if (pickup != null && dropoff != null) {
+      final bounds = LatLngBounds(
+        southwest: LatLng(
+          pickup.latitude < dropoff.latitude
+              ? pickup.latitude
+              : dropoff.latitude,
+          pickup.longitude < dropoff.longitude
+              ? pickup.longitude
+              : dropoff.longitude,
+        ),
+        northeast: LatLng(
+          pickup.latitude > dropoff.latitude
+              ? pickup.latitude
+              : dropoff.latitude,
+          pickup.longitude > dropoff.longitude
+              ? pickup.longitude
+              : dropoff.longitude,
+        ),
+      );
+      _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 48.0));
+    } else if (pickup != null) {
+      _mapController!.animateCamera(CameraUpdate.newLatLngZoom(pickup, 15.0));
+    }
+  }
+
+  static String getArabicStatus(String? status) {
+    switch (status) {
+      case 'pending':
+        return 'قيد الإنشاء';
+      case 'matching':
+        return 'جارِ التعيين';
+      case 'assigned':
+        return 'تم التعيين';
+      case 'enRoute':
+        return 'في الطريق';
+      case 'pickedUp':
+        return 'تم الاستلام';
+      case 'delivering':
+        return 'جاري التوصيل';
+      case 'delivered':
+        return 'تم التسليم';
+      default:
+        return status ?? 'قيد الإنشاء';
+    }
   }
 
   @override
@@ -99,75 +151,78 @@ class _TrackScreenState extends State<TrackScreen> {
         appBar: AppBar(
           title: Text(kReleaseMode ? l10n.track : '${l10n.track} • DEBUG'),
         ),
-        body: Column(
-          children: [
-            Expanded(
-              flex: 2,
-              child: GoogleMap(
-                onMapCreated: (GoogleMapController controller) {
-                  _mapController = controller;
-                },
-                initialCameraPosition: widget.order?.pickup != null
-                    ? CameraPosition(
-                        target: LatLng(widget.order!.pickup.latitude,
-                            widget.order!.pickup.longitude),
-                        zoom: 14.0,
-                      )
-                    : _nouakchott,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: true,
-                markers: _buildMarkers(),
-                compassEnabled: true,
-                mapToolbarEnabled: false,
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.order != null) ...[
-                      OrderStatusTimeline(
-                          status: widget.order!.status ?? 'pending'),
-                      const SizedBox(height: 12),
-                      Text('الحالة: ${widget.order!.status ?? 'pending'}',
-                          style: Theme.of(context).textTheme.titleMedium),
-                    ] else
-                      Text('الحالة: في الطريق',
-                          style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 8),
-                    const Text('السائق: ---'),
-                    const Text('المركبة: ---'),
-                    Text(
-                        'السعر: ${widget.order?.price.round() ?? '---'} ${l10n.currency}'),
-                    if (widget.order != null) ...[
-                      Text('المسافة: ${widget.order!.distanceKm} كم'),
-                      Text('من: ${widget.order!.pickupAddress}'),
-                      Text('إلى: ${widget.order!.dropoffAddress}'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final trackUrl =
-                              'https://wawapp.page.link/track/${widget.order?.hashCode ?? 'unknown'}';
-                          await Clipboard.setData(
-                              ClipboardData(text: trackUrl));
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('تم نسخ رابط التتبع')),
-                            );
-                          }
-                        },
-                        child: const Text('نسخ رابط التتبع'),
-                      ),
-                    ],
-                  ],
+        body: SafeArea(
+          child: Column(
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.4,
+                child: GoogleMap(
+                  onMapCreated: (GoogleMapController controller) {
+                    _mapController = controller;
+                    WidgetsBinding.instance
+                        .addPostFrameCallback((_) => _fitBounds());
+                  },
+                  initialCameraPosition: widget.order?.pickup != null
+                      ? CameraPosition(
+                          target: LatLng(widget.order!.pickup.latitude,
+                              widget.order!.pickup.longitude),
+                          zoom: 14.0,
+                        )
+                      : _nouakchott,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
+                  markers: _buildMarkers(),
+                  compassEnabled: true,
+                  mapToolbarEnabled: false,
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.order != null) ...[
+                        OrderStatusTimeline(
+                            status: widget.order!.status ?? 'pending'),
+                        const SizedBox(height: 12),
+                        Text('الحالة: ${getArabicStatus(widget.order!.status)}',
+                            style: Theme.of(context).textTheme.titleMedium),
+                      ] else
+                        Text('الحالة: في الطريق',
+                            style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(height: 8),
+                      const Text('السائق: ---'),
+                      const Text('المركبة: ---'),
+                      Text(
+                          'السعر: ${widget.order?.price.round() ?? '---'} ${l10n.currency}'),
+                      if (widget.order != null) ...[
+                        Text('المسافة: ${widget.order!.distanceKm} كم'),
+                        Text('من: ${widget.order!.pickupAddress}'),
+                        Text('إلى: ${widget.order!.dropoffAddress}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final trackUrl =
+                                'https://wawapp.page.link/track/${widget.order?.hashCode ?? 'unknown'}';
+                            await Clipboard.setData(
+                                ClipboardData(text: trackUrl));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('تم نسخ رابط التتبع')),
+                              );
+                            }
+                          },
+                          child: const Text('نسخ رابط التتبع'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

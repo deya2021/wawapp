@@ -20,33 +20,50 @@ class OrderStatusTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = _indexOf(status);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(_steps.length, (i) {
-        final active = i <= current;
-        return Expanded(
-          child: Column(
-            children: [
-              Container(
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: active
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey.shade700,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _label(_steps[i]),
-                style: Theme.of(context).textTheme.labelSmall,
-                textAlign: TextAlign.center,
-              ),
-            ],
+    final isSmallScreen = MediaQuery.of(context).size.width < 400;
+
+    return Column(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: IntrinsicWidth(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(_steps.length, (i) {
+                final active = i <= current;
+                return SizedBox(
+                  width: 80,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 8,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        decoration: BoxDecoration(
+                          color: active
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey.shade700,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _label(_steps[i]),
+                        style: isSmallScreen
+                            ? Theme.of(context).textTheme.labelSmall
+                            : Theme.of(context).textTheme.labelSmall,
+                        textAlign: TextAlign.center,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
           ),
-        );
-      }),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 

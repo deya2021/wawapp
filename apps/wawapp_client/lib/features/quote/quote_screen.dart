@@ -55,7 +55,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                     children: [
                       Text(
                         price > 0
-                            ? '${l10n.currency} ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'
+                            ? '${l10n.currency} ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'  
                             : '--- ${l10n.currency}',
                         style: const TextStyle(
                             fontSize: 32, fontWeight: FontWeight.bold),
