@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import '../../l10n/app_localizations.dart';
 import '../../core/location/location_service.dart';
 import 'models/order.dart';
+import 'widgets/order_status_timeline.dart';
 
 class TrackScreen extends StatefulWidget {
   final Order? order;
@@ -94,7 +97,7 @@ class _TrackScreenState extends State<TrackScreen> {
       textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.track),
+          title: Text(kReleaseMode ? l10n.track : '${l10n.track} • DEBUG'),
         ),
         body: Column(
           children: [
@@ -125,8 +128,15 @@ class _TrackScreenState extends State<TrackScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('الحالة: في الطريق',
-                        style: Theme.of(context).textTheme.headlineMedium),
+                    if (widget.order != null) ...[
+                      OrderStatusTimeline(
+                          status: widget.order!.status ?? 'pending'),
+                      const SizedBox(height: 12),
+                      Text('الحالة: ${widget.order!.status ?? 'pending'}',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ] else
+                      Text('الحالة: في الطريق',
+                          style: Theme.of(context).textTheme.headlineMedium),
                     const SizedBox(height: 8),
                     const Text('السائق: ---'),
                     const Text('المركبة: ---'),
@@ -136,6 +146,22 @@ class _TrackScreenState extends State<TrackScreen> {
                       Text('المسافة: ${widget.order!.distanceKm} كم'),
                       Text('من: ${widget.order!.pickupAddress}'),
                       Text('إلى: ${widget.order!.dropoffAddress}'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final trackUrl =
+                              'https://wawapp.page.link/track/${widget.order?.hashCode ?? 'unknown'}';
+                          await Clipboard.setData(
+                              ClipboardData(text: trackUrl));
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('تم نسخ رابط التتبع')),
+                            );
+                          }
+                        },
+                        child: const Text('نسخ رابط التتبع'),
+                      ),
                     ],
                   ],
                 ),

@@ -49,7 +49,8 @@ class _HomeScreenSimpleState extends ConsumerState<HomeScreenSimple> {
       lat2: dropoff.latitude,
       lng2: dropoff.longitude,
     );
-    final price = computePrice(km);
+    final breakdown = Pricing.compute(km);
+    final price = breakdown.rounded;
 
     ref.read(quoteProvider.notifier).setDistance(km);
     ref.read(quoteProvider.notifier).setPrice(price.round());

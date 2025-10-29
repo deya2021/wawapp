@@ -7,6 +7,7 @@ class Order {
   final String dropoffAddress;
   final LatLng pickup;
   final LatLng dropoff;
+  final String? status;
 
   const Order({
     required this.distanceKm,
@@ -15,6 +16,7 @@ class Order {
     required this.dropoffAddress,
     required this.pickup,
     required this.dropoff,
+    this.status,
   });
 
   Map<String, dynamic> toMap() => {
@@ -24,5 +26,6 @@ class Order {
         'dropoffAddress': dropoffAddress,
         'pickup': {'lat': pickup.latitude, 'lng': pickup.longitude},
         'dropoff': {'lat': dropoff.latitude, 'lng': dropoff.longitude},
+        'status': status,
       };
 }

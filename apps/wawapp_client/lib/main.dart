@@ -16,7 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   debugPrint('🚀 WawApp initializing...');
-  
+
   await BuildInfoProvider.initialize();
 
   try {

@@ -45,7 +45,8 @@ class LocationService {
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
-      dev.log('Got position: ${position.latitude}, ${position.longitude}', name: _tag);
+      dev.log('Got position: ${position.latitude}, ${position.longitude}',
+          name: _tag);
       return position;
     } catch (e) {
       dev.log('Error getting current position: $e', name: _tag);

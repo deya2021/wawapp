@@ -65,7 +65,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       setState(() {
         _errorMessage = null;
       });
-      dev.log('Location permission denied, showing manual mode', name: 'WAWAPP_HOME');
+      dev.log('Location permission denied, showing manual mode',
+          name: 'WAWAPP_HOME');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -210,7 +211,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               )
                             : GoogleMap(
                                 onMapCreated: (GoogleMapController controller) {
-                                  dev.log('GoogleMap created successfully', name: 'WAWAPP_HOME');
+                                  dev.log('GoogleMap created successfully',
+                                      name: 'WAWAPP_HOME');
                                   _mapController = controller;
                                 },
                                 initialCameraPosition: _nouakchott,
@@ -307,9 +309,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 lat2: dropoff.latitude,
                                 lng2: dropoff.longitude,
                               );
-                              final price = computePrice(km);
+                              final breakdown = Pricing.compute(km);
+                              final price = breakdown.rounded;
 
-                              dev.log('Distance: ${km}km, Price: ${price}MRU', name: 'WAWAPP_LOC');
+                              dev.log('Distance: ${km}km, Price: ${price}MRU',
+                                  name: 'WAWAPP_LOC');
 
                               ref.read(quoteProvider.notifier).setPickup(
                                   quote_latlng.LatLng(
