@@ -12,7 +12,7 @@ class PreflightChecker {
 
   Future<void> runChecks() async {
     print('🚀 WawApp Client - Environment Preflight Check\n');
-    
+
     await _checkFlutterSDK();
     await _checkDartSDK();
     await _checkJavaJDK();
@@ -23,11 +23,12 @@ class PreflightChecker {
     await _checkAndroidManifest();
     await _checkPubspecDependencies();
     await _checkFirebaseConnectivity();
-    
+
     _printResults();
-    
+
     if (hasErrors) {
-      print('\n❌ Preflight check failed. Please fix the issues above before building.');
+      print(
+          '\n❌ Preflight check failed. Please fix the issues above before building.');
       exit(1);
     } else {
       print('\n✅ All checks passed! Ready to build.');
@@ -47,41 +48,47 @@ class PreflightChecker {
           flutterPath = flutterMatch.group(1)!.replaceAll('\\\\', '\\');
         }
       }
-      
+
       ProcessResult? result;
-      
+
       // Try Flutter from local.properties path first
       if (flutterPath != null) {
-        final flutterCmd = Platform.isWindows ? '$flutterPath\\bin\\flutter.bat' : '$flutterPath/bin/flutter';
+        final flutterCmd = Platform.isWindows
+            ? '$flutterPath\\bin\\flutter.bat'
+            : '$flutterPath/bin/flutter';
         try {
           result = await Process.run(flutterCmd, ['--version']);
         } catch (_) {}
       }
-      
+
       // Fallback to PATH
       if (result == null || result.exitCode != 0) {
         try {
           result = await Process.run('flutter', ['--version']);
         } catch (_) {}
       }
-      
+
       if (result != null && result.exitCode == 0) {
         final output = result.stdout.toString();
-        final versionMatch = RegExp(r'Flutter (\d+\.\d+\.\d+)').firstMatch(output);
+        final versionMatch =
+            RegExp(r'Flutter (\d+\.\d+\.\d+)').firstMatch(output);
         if (versionMatch != null) {
           final version = versionMatch.group(1)!;
           final versionParts = version.split('.').map(int.parse).toList();
-          if (versionParts[0] > 3 || (versionParts[0] == 3 && versionParts[1] >= 22)) {
+          if (versionParts[0] > 3 ||
+              (versionParts[0] == 3 && versionParts[1] >= 22)) {
             _addResult('Flutter SDK', '✅', 'Version $version (>= 3.22.0)');
           } else {
-            _addResult('Flutter SDK', '❌', 'Version $version < 3.22.0 required');
+            _addResult(
+                'Flutter SDK', '❌', 'Version $version < 3.22.0 required');
             hasErrors = true;
           }
         } else {
           _addResult('Flutter SDK', '⚠️', 'Version parsing failed');
         }
       } else {
-        _addResult('Flutter SDK', '❌', 'Flutter not found in PATH or local.properties');
+        _addResult('Flutter SDK', '❌',
+            'Flutter not found in PATH or local.properties');
         hasErrors = true;
       }
     } catch (e) {
@@ -95,7 +102,8 @@ class PreflightChecker {
       final result = await Process.run('dart', ['--version']);
       if (result.exitCode == 0) {
         final output = result.stdout.toString();
-        final versionMatch = RegExp(r'Dart SDK version: (\d+\.\d+\.\d+)').firstMatch(output);
+        final versionMatch =
+            RegExp(r'Dart SDK version: (\d+\.\d+\.\d+)').firstMatch(output);
         if (versionMatch != null) {
           final version = versionMatch.group(1)!;
           _addResult('Dart SDK', '✅', 'Version $version');
@@ -120,7 +128,7 @@ class PreflightChecker {
       } else {
         result = await Process.run('java', ['-version']);
       }
-      
+
       if (result.exitCode == 0) {
         final output = result.stderr.toString();
         final versionMatch = RegExp(r'version "(\d+)').firstMatch(output);
@@ -173,18 +181,23 @@ class PreflightChecker {
     try {
       final androidDir = Directory('android');
       if (await androidDir.exists()) {
-        final gradlewFile = File(Platform.isWindows ? 'android/gradlew.bat' : 'android/gradlew');
+        final gradlewFile = File(
+            Platform.isWindows ? 'android/gradlew.bat' : 'android/gradlew');
         if (await gradlewFile.exists()) {
           ProcessResult result;
           if (Platform.isWindows) {
-            result = await Process.run('cmd', ['/c', 'gradlew.bat', '--version'], workingDirectory: 'android');
+            result = await Process.run(
+                'cmd', ['/c', 'gradlew.bat', '--version'],
+                workingDirectory: 'android');
           } else {
-            result = await Process.run('./gradlew', ['--version'], workingDirectory: 'android');
+            result = await Process.run('./gradlew', ['--version'],
+                workingDirectory: 'android');
           }
-          
+
           if (result.exitCode == 0) {
             final output = result.stdout.toString();
-            final versionMatch = RegExp(r'Gradle (\d+\.\d+)').firstMatch(output);
+            final versionMatch =
+                RegExp(r'Gradle (\d+\.\d+)').firstMatch(output);
             if (versionMatch != null) {
               final version = versionMatch.group(1)!;
               _addResult('Gradle', '✅', 'Version $version');
@@ -215,11 +228,13 @@ class PreflightChecker {
       try {
         final content = await googleServicesFile.readAsString();
         final config = jsonDecode(content);
-        final packageName = config['client']?[0]?['client_info']?['android_client_info']?['package_name'];
+        final packageName = config['client']?[0]?['client_info']
+            ?['android_client_info']?['package_name'];
         if (packageName == 'com.wawapp.client') {
           _addResult('Firebase Config', '✅', 'google-services.json valid');
         } else {
-          _addResult('Firebase Config', '⚠️', 'Package name mismatch: $packageName');
+          _addResult(
+              'Firebase Config', '⚠️', 'Package name mismatch: $packageName');
         }
       } catch (e) {
         _addResult('Firebase Config', '❌', 'Invalid JSON: $e');
@@ -235,8 +250,8 @@ class PreflightChecker {
     final firebaseOptionsFile = File('lib/firebase_options.dart');
     if (await firebaseOptionsFile.exists()) {
       final content = await firebaseOptionsFile.readAsString();
-      if (content.contains('DefaultFirebaseOptions') && 
-          content.contains('android') && 
+      if (content.contains('DefaultFirebaseOptions') &&
+          content.contains('android') &&
           content.contains('projectId')) {
         _addResult('Firebase Options', '✅', 'firebase_options.dart configured');
       } else {
@@ -254,15 +269,17 @@ class PreflightChecker {
     if (await manifestFile.exists()) {
       final content = await manifestFile.readAsString();
       final hasInternet = content.contains('android.permission.INTERNET');
-      final hasNetworkState = content.contains('android.permission.ACCESS_NETWORK_STATE');
-      
+      final hasNetworkState =
+          content.contains('android.permission.ACCESS_NETWORK_STATE');
+
       if (hasInternet && hasNetworkState) {
         _addResult('Android Permissions', '✅', 'Required permissions present');
       } else {
         final missing = <String>[];
         if (!hasInternet) missing.add('INTERNET');
         if (!hasNetworkState) missing.add('ACCESS_NETWORK_STATE');
-        _addResult('Android Permissions', '❌', 'Missing: ${missing.join(', ')}');
+        _addResult(
+            'Android Permissions', '❌', 'Missing: ${missing.join(', ')}');
         hasErrors = true;
       }
     } else {
@@ -281,13 +298,16 @@ class PreflightChecker {
         'cloud_firestore',
         'firebase_messaging'
       ];
-      
-      final missing = requiredDeps.where((dep) => !content.contains('$dep:')).toList();
-      
+
+      final missing =
+          requiredDeps.where((dep) => !content.contains('$dep:')).toList();
+
       if (missing.isEmpty) {
-        _addResult('Firebase Dependencies', '✅', 'All required dependencies present');
+        _addResult(
+            'Firebase Dependencies', '✅', 'All required dependencies present');
       } else {
-        _addResult('Firebase Dependencies', '❌', 'Missing: ${missing.join(', ')}');
+        _addResult(
+            'Firebase Dependencies', '❌', 'Missing: ${missing.join(', ')}');
         hasErrors = true;
       }
     } else {
@@ -299,12 +319,15 @@ class PreflightChecker {
   Future<void> _checkFirebaseConnectivity() async {
     try {
       // Simple network connectivity test
-      final pingArgs = Platform.isWindows ? ['-n', '1', 'firebase.google.com'] : ['-c', '1', 'firebase.google.com'];
+      final pingArgs = Platform.isWindows
+          ? ['-n', '1', 'firebase.google.com']
+          : ['-c', '1', 'firebase.google.com'];
       final result = await Process.run('ping', pingArgs);
       if (result.exitCode == 0) {
         _addResult('Network Connectivity', '✅', 'Firebase reachable');
       } else {
-        _addResult('Network Connectivity', '⚠️', 'Firebase unreachable (offline?)');
+        _addResult(
+            'Network Connectivity', '⚠️', 'Firebase unreachable (offline?)');
       }
     } catch (e) {
       _addResult('Network Connectivity', '⚠️', 'Network test failed');
@@ -318,16 +341,16 @@ class PreflightChecker {
   void _printResults() {
     print('📋 Check Results:');
     print('=' * 60);
-    
+
     for (final result in results) {
       final padding = ' ' * (25 - result.check.length);
       print('${result.check}$padding ${result.status} ${result.message}');
     }
-    
+
     final passed = results.where((r) => r.status == '✅').length;
     final warnings = results.where((r) => r.status == '⚠️').length;
     final errors = results.where((r) => r.status == '❌').length;
-    
+
     print('=' * 60);
     print('Summary: $passed passed, $warnings warnings, $errors errors');
   }
@@ -337,6 +360,6 @@ class CheckResult {
   final String check;
   final String status;
   final String message;
-  
+
   CheckResult(this.check, this.status, this.message);
 }

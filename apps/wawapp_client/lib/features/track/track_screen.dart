@@ -1,10 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 import '../../l10n/app_localizations.dart';
+import '../../core/location/location_service.dart';
 import 'models/order.dart';
 
-class TrackScreen extends StatelessWidget {
+class TrackScreen extends StatefulWidget {
   final Order? order;
   const TrackScreen({super.key, this.order});
+
+  @override
+  State<TrackScreen> createState() => _TrackScreenState();
+}
+
+class _TrackScreenState extends State<TrackScreen> {
+  GoogleMapController? _mapController;
+  StreamSubscription? _positionSubscription;
+  LatLng? _currentPosition;
+
+  static const CameraPosition _nouakchott = CameraPosition(
+    target: LatLng(18.0735, -15.9582),
+    zoom: 14.0,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _startLocationTracking();
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _startLocationTracking() {
+    _positionSubscription = LocationService.getPositionStream().listen(
+      (position) {
+        setState(() {
+          _currentPosition = LatLng(position.latitude, position.longitude);
+        });
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLng(_currentPosition!),
+        );
+      },
+    );
+  }
+
+  Set<Marker> _buildMarkers() {
+    final markers = <Marker>{};
+
+    if (_currentPosition != null) {
+      markers.add(Marker(
+        markerId: const MarkerId('current'),
+        position: _currentPosition!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        infoWindow: const InfoWindow(title: 'موقعك الحالي'),
+      ));
+    }
+
+    if (widget.order?.pickup != null) {
+      markers.add(Marker(
+        markerId: const MarkerId('pickup'),
+        position: LatLng(
+            widget.order!.pickup.latitude, widget.order!.pickup.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow:
+            InfoWindow(title: 'الاستلام', snippet: widget.order!.pickupAddress),
+      ));
+    }
+
+    if (widget.order?.dropoff != null) {
+      markers.add(Marker(
+        markerId: const MarkerId('dropoff'),
+        position: LatLng(
+            widget.order!.dropoff.latitude, widget.order!.dropoff.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        infoWindow:
+            InfoWindow(title: 'التسليم', snippet: widget.order!.dropoffAddress),
+      ));
+    }
+
+    return markers;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +100,22 @@ class TrackScreen extends StatelessWidget {
           children: [
             Expanded(
               flex: 2,
-              child: Container(
-                color: Colors.grey[300],
-                child: const Center(
-                  child: Icon(
-                    Icons.navigation,
-                    size: 64,
-                    color: Colors.blue,
-                  ),
-                ),
+              child: GoogleMap(
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController = controller;
+                },
+                initialCameraPosition: widget.order?.pickup != null
+                    ? CameraPosition(
+                        target: LatLng(widget.order!.pickup.latitude,
+                            widget.order!.pickup.longitude),
+                        zoom: 14.0,
+                      )
+                    : _nouakchott,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                markers: _buildMarkers(),
+                compassEnabled: true,
+                mapToolbarEnabled: false,
               ),
             ),
             Expanded(
@@ -45,11 +131,11 @@ class TrackScreen extends StatelessWidget {
                     const Text('السائق: ---'),
                     const Text('المركبة: ---'),
                     Text(
-                        'السعر: ${order?.price.round() ?? '---'} ${l10n.currency}'),
-                    if (order != null) ...[
-                      Text('المسافة: ${order!.distanceKm} كم'),
-                      Text('من: ${order!.pickupAddress}'),
-                      Text('إلى: ${order!.dropoffAddress}'),
+                        'السعر: ${widget.order?.price.round() ?? '---'} ${l10n.currency}'),
+                    if (widget.order != null) ...[
+                      Text('المسافة: ${widget.order!.distanceKm} كم'),
+                      Text('من: ${widget.order!.pickupAddress}'),
+                      Text('إلى: ${widget.order!.dropoffAddress}'),
                     ],
                   ],
                 ),

@@ -1,8 +1,8 @@
+import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../l10n/app_localizations.dart';
 import '../map/pick_route_controller.dart';
 import '../map/places_autocomplete_sheet.dart';
@@ -10,6 +10,7 @@ import '../quote/providers/quote_provider.dart';
 import '../quote/models/latlng.dart' as quote_latlng;
 import '../../core/geo/distance.dart';
 import '../../core/pricing/pricing.dart';
+import '../../core/location/location_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -49,56 +50,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _errorMessage = 'جاري تحديد موقعك...';
     });
 
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
+    final hasPermission = await LocationService.checkPermissions();
 
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always) {
-        setState(() {
-          _hasLocationPermission = true;
-          _errorMessage = null;
-        });
-        await _getCurrentLocation();
-      } else if (permission == LocationPermission.deniedForever) {
-        setState(() {
-          _errorMessage = null;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                  'يرجى تفعيل إذن الموقع من الإعدادات لتحديد موقعك الحالي'),
-              action: SnackBarAction(
-                label: 'الإعدادات',
-                onPressed: () => Geolocator.openAppSettings(),
-              ),
-            ),
-          );
-        }
-      } else {
-        setState(() {
-          _errorMessage = null;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('يمكنك استخدام الخريطة يدوياً لتحديد المواقع'),
-            ),
-          );
-        }
-      }
-    } catch (e) {
+    if (hasPermission) {
+      setState(() {
+        _hasLocationPermission = true;
+        _errorMessage = null;
+      });
+      await _getCurrentLocation();
+    } else {
       setState(() {
         _errorMessage = null;
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تعذر الوصول للموقع. يمكنك استخدام الخريطة يدوياً'),
+            content: Text('يمكنك استخدام الخريطة يدوياً لتحديد المواقع'),
           ),
         );
       }
@@ -106,26 +73,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
-      );
+    final position = await LocationService.getCurrentPosition();
+    if (position != null) {
       _mapController?.animateCamera(
         CameraUpdate.newLatLng(
           LatLng(position.latitude, position.longitude),
         ),
       );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'لم يتمكن من تحديد موقعك الحالي. يرجى التأكد من تفعيل GPS'),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('لم يتمكن من تحديد موقعك الحالي. يرجى التأكد من تفعيل GPS'),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
 
@@ -293,7 +255,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       labelText: l10n.pickup,
                       prefixIcon: IconButton(
                         icon: const Icon(Icons.my_location),
-                        onPressed: _getCurrentLocation,
+                        onPressed: () async {
+                          await ref
+                              .read(routePickerProvider.notifier)
+                              .setCurrentLocation();
+                        },
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.search),
@@ -337,7 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               );
                               final price = computePrice(km);
 
-                              print('Distance: ${km}km, Price: ${price}MRU');
+                              dev.log('Distance: ${km}km, Price: ${price}MRU', name: 'WAWAPP_LOC');
 
                               ref.read(quoteProvider.notifier).setPickup(
                                   quote_latlng.LatLng(

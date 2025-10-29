@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'generated/l10n.dart';
+import 'l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/build_info/build_info.dart';
@@ -40,17 +40,18 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       localizationsDelegates: const [
-        S.delegate,
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: S.delegate.supportedLocales,
+      supportedLocales: AppLocalizations.supportedLocales,
       title: 'WawApp Client',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       routerConfig: router,
-      builder: (context, child) => BuildInfoBanner(child: child ?? const SizedBox()),
+      builder: (context, child) =>
+          BuildInfoBanner(child: child ?? const SizedBox()),
     );
   }
 }
