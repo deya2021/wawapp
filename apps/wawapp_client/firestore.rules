@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Orders collection rules
+    match /orders/{orderId} {
+      // Users can read their own orders only
+      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      
+      // Users can create orders
+      allow create: if request.auth != null && 
+                   request.resource.data.ownerId == request.auth.uid &&
+                   request.resource.data.keys().hasAll(['pickup', 'dropoff', 'price', 'status', 'createdAt', 'ownerId']);
+      
+      // Cannot modify price after creation
+      allow update: if request.auth != null && 
+                   resource.data.ownerId == request.auth.uid &&
+                   request.resource.data.price == resource.data.price &&
+                   // Only assigned driver can update status and telemetry
+                   (resource.data.driverId == request.auth.uid && 
+                    request.resource.data.status in ['enRoute', 'pickedUp', 'delivering', 'delivered']);
+      
+      // Telemetry subcollection - only assigned driver can write
+      match /telemetry/{document} {
+        allow read: if request.auth != null && 
+                   (get(/databases/$(database)/documents/orders/$(orderId)).data.ownerId == request.auth.uid ||
+                    get(/databases/$(database)/documents/orders/$(orderId)).data.driverId == request.auth.uid);
+        
+        allow write: if request.auth != null && 
+                    get(/databases/$(database)/documents/orders/$(orderId)).data.driverId == request.auth.uid;
+      }
+    }
+    
+    // Deny all other writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
