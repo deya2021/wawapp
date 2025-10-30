@@ -39,50 +39,64 @@ class _TrackScreenState extends State<TrackScreen> {
   }
 
   void _startLocationTracking() {
-    _positionSubscription = LocationService.getPositionStream().listen(
-      (position) {
-        setState(() {
-          _currentPosition = LatLng(position.latitude, position.longitude);
-        });
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLng(_currentPosition!),
-        );
-      },
-    );
+    _positionSubscription = LocationService.getPositionStream().listen((
+      position,
+    ) {
+      setState(() {
+        _currentPosition = LatLng(position.latitude, position.longitude);
+      });
+      _mapController?.animateCamera(CameraUpdate.newLatLng(_currentPosition!));
+    });
   }
 
   Set<Marker> _buildMarkers() {
     final markers = <Marker>{};
 
     if (_currentPosition != null) {
-      markers.add(Marker(
-        markerId: const MarkerId('current'),
-        position: _currentPosition!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'موقعك الحالي'),
-      ));
+      markers.add(
+        Marker(
+          markerId: const MarkerId('current'),
+          position: _currentPosition!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'موقعك الحالي'),
+        ),
+      );
     }
 
     if (widget.order?.pickup != null) {
-      markers.add(Marker(
-        markerId: const MarkerId('pickup'),
-        position: LatLng(
-            widget.order!.pickup.latitude, widget.order!.pickup.longitude),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow:
-            InfoWindow(title: 'استلام', snippet: widget.order!.pickupAddress),
-      ));
+      markers.add(
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: LatLng(
+            widget.order!.pickup.latitude,
+            widget.order!.pickup.longitude,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+          infoWindow: InfoWindow(
+            title: 'استلام',
+            snippet: widget.order!.pickupAddress,
+          ),
+        ),
+      );
     }
 
     if (widget.order?.dropoff != null) {
-      markers.add(Marker(
-        markerId: const MarkerId('dropoff'),
-        position: LatLng(
-            widget.order!.dropoff.latitude, widget.order!.dropoff.longitude),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow:
-            InfoWindow(title: 'تسليم', snippet: widget.order!.dropoffAddress),
-      ));
+      markers.add(
+        Marker(
+          markerId: const MarkerId('dropoff'),
+          position: LatLng(
+            widget.order!.dropoff.latitude,
+            widget.order!.dropoff.longitude,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(
+            title: 'تسليم',
+            snippet: widget.order!.dropoffAddress,
+          ),
+        ),
+      );
     }
 
     return markers;
@@ -159,13 +173,16 @@ class _TrackScreenState extends State<TrackScreen> {
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     _mapController = controller;
-                    WidgetsBinding.instance
-                        .addPostFrameCallback((_) => _fitBounds());
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => _fitBounds(),
+                    );
                   },
                   initialCameraPosition: widget.order?.pickup != null
                       ? CameraPosition(
-                          target: LatLng(widget.order!.pickup.latitude,
-                              widget.order!.pickup.longitude),
+                          target: LatLng(
+                            widget.order!.pickup.latitude,
+                            widget.order!.pickup.longitude,
+                          ),
                           zoom: 14.0,
                         )
                       : _nouakchott,
@@ -184,18 +201,24 @@ class _TrackScreenState extends State<TrackScreen> {
                     children: [
                       if (widget.order != null) ...[
                         OrderStatusTimeline(
-                            status: widget.order!.status ?? 'pending'),
+                          status: widget.order!.status ?? 'pending',
+                        ),
                         const SizedBox(height: 12),
-                        Text('الحالة: ${getArabicStatus(widget.order!.status)}',
-                            style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          'الحالة: ${getArabicStatus(widget.order!.status)}',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                       ] else
-                        Text('الحالة: في الطريق',
-                            style: Theme.of(context).textTheme.headlineMedium),
+                        Text(
+                          'الحالة: في الطريق',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
                       const SizedBox(height: 8),
                       const Text('السائق: ---'),
                       const Text('المركبة: ---'),
                       Text(
-                          'السعر: ${widget.order?.price.round() ?? '---'} ${l10n.currency}'),
+                        'السعر: ${widget.order?.price.round() ?? '---'} ${l10n.currency}',
+                      ),
                       if (widget.order != null) ...[
                         Text('المسافة: ${widget.order!.distanceKm} كم'),
                         Text('من: ${widget.order!.pickupAddress}'),
@@ -206,11 +229,13 @@ class _TrackScreenState extends State<TrackScreen> {
                             final trackUrl =
                                 'https://wawapp.page.link/track/${widget.order?.hashCode ?? 'unknown'}';
                             await Clipboard.setData(
-                                ClipboardData(text: trackUrl));
+                              ClipboardData(text: trackUrl),
+                            );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('تم نسخ رابط التتبع')),
+                                  content: Text('تم نسخ رابط التتبع'),
+                                ),
                               );
                             }
                           },

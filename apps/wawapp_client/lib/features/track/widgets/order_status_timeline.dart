@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class OrderStatusTimeline extends StatelessWidget {
   final String
-      status; // pending, matching, assigned, enRoute, pickedUp, delivering, delivered, canceled
+  status; // pending, matching, assigned, enRoute, pickedUp, delivering, delivered, canceled
   const OrderStatusTimeline({super.key, required this.status});
 
   static const List<String> _steps = [
@@ -12,7 +12,7 @@ class OrderStatusTimeline extends StatelessWidget {
     'enRoute',
     'pickedUp',
     'delivering',
-    'delivered'
+    'delivered',
   ];
 
   int _indexOf(String s) => _steps.indexOf(s).clamp(0, _steps.length - 1);

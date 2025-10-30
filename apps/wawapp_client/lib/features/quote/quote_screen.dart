@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'providers/quote_provider.dart';
 import '../map/pick_route_controller.dart';
 import '../track/models/order.dart';
+import '../track/data/orders_repository.dart';
 import '../../core/utils/address_utils.dart';
 import '../../core/utils/eta.dart';
 import '../../core/pricing/pricing.dart';
@@ -18,6 +19,59 @@ class QuoteScreen extends ConsumerStatefulWidget {
 }
 
 class _QuoteScreenState extends ConsumerState<QuoteScreen> {
+  Future<void> _onRequestNow() async {
+    final repo = ref.read(ordersRepositoryProvider);
+    final quoteState = ref.read(quoteProvider);
+    final routeState = ref.read(routePickerProvider);
+
+    try {
+      final fromText = AddressUtils.friendly(
+        userInput: routeState.pickupAddress,
+        latLng: routeState.pickup,
+      );
+      final toText = AddressUtils.friendly(
+        userInput: routeState.dropoffAddress,
+        latLng: routeState.dropoff,
+      );
+      final breakdown = Pricing.compute(quoteState.distanceKm!);
+      final orderData = {
+        'distanceKm': quoteState.distanceKm!,
+        'price': breakdown.rounded.toDouble(),
+        'pickupAddress': fromText,
+        'dropoffAddress': toText,
+        'pickup': {
+          'lat': routeState.pickup!.latitude,
+          'lng': routeState.pickup!.longitude,
+        },
+        'dropoff': {
+          'lat': routeState.dropoff!.latitude,
+          'lng': routeState.dropoff!.longitude,
+        },
+      };
+
+      // Ensure the order moves to a driver-visible status before navigation
+      await repo.createOrderAndFinalize(orderData);
+      if (!mounted) return;
+
+      final order = Order(
+        distanceKm: quoteState.distanceKm!,
+        price: breakdown.rounded.toDouble(),
+        pickupAddress: fromText,
+        dropoffAddress: toText,
+        pickup: routeState.pickup!,
+        dropoff: routeState.dropoff!,
+        status: 'matching',
+      );
+      context.push('/track', extra: order);
+    } catch (e, st) {
+      debugPrint('createOrderAndFinalize failed: $e\n$st');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر إنشاء الطلب. حاول مجددًا.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -28,8 +82,9 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
       textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
-          title:
-              Text(kReleaseMode ? l10n.get_quote : '${l10n.get_quote} • DEBUG'),
+          title: Text(
+            kReleaseMode ? l10n.get_quote : '${l10n.get_quote} • DEBUG',
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -55,10 +110,12 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                     children: [
                       Text(
                         price > 0
-                            ? '${l10n.currency} ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'  
+                            ? '${l10n.currency} ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'
                             : '--- ${l10n.currency}',
                         style: const TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.bold),
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       if (breakdown != null) ...[
@@ -89,31 +146,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
               ],
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: quoteState.isReady
-                    ? () {
-                        final routeState = ref.read(routePickerProvider);
-                        final fromText = AddressUtils.friendly(
-                          userInput: routeState.pickupAddress,
-                          latLng: routeState.pickup,
-                        );
-                        final toText = AddressUtils.friendly(
-                          userInput: routeState.dropoffAddress,
-                          latLng: routeState.dropoff,
-                        );
-                        final breakdown =
-                            Pricing.compute(quoteState.distanceKm!);
-                        final order = Order(
-                          distanceKm: quoteState.distanceKm!,
-                          price: breakdown.rounded.toDouble(),
-                          pickupAddress: fromText,
-                          dropoffAddress: toText,
-                          pickup: routeState.pickup!,
-                          dropoff: routeState.dropoff!,
-                          status: 'pending',
-                        );
-                        context.push('/track', extra: order);
-                      }
-                    : null,
+                onPressed: quoteState.isReady ? () => _onRequestNow() : null,
                 child: Text(l10n.request_now),
               ),
             ],
